@@ -1,0 +1,34 @@
+# Maven
+target/
+dependency-reduced-pom.xml
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Java runtime artifacts
+*.class
+*.log
+hs_err_pid*
+replay_pid*
+
+# IDEs and editors
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Local coding-agent metadata
+.agents/
+.codex/
+
+# Operating system files
+.DS_Store
+Thumbs.db
