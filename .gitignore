@@ -12,6 +12,10 @@ release.properties
 hs_err_pid*
 replay_pid*
 
+# Frontend dependencies and build output
+node_modules/
+dist/
+
 # IDEs and editors
 .idea/
 *.iml

@@ -9,7 +9,8 @@ The backend and frontend live under dedicated top-level directories in this repo
 - Java 21
 - Spring Boot 3
 - Maven
-- React and TypeScript for the separately developed frontend
+- Node.js 24
+- React, TypeScript, Vite, and React Router
 - An external mocked API as the source of initial product data
 - In-memory backend application state
 - No database
@@ -21,12 +22,12 @@ vending-machine/
 ├── backend/
 │   ├── pom.xml
 │   └── src/       # Spring Boot backend source
-├── frontend/      # Reserved for the React and TypeScript application
+├── frontend/      # React and TypeScript application
 ├── mock-api/      # Read-only external mock products API
 └── .github/       # GitHub Actions workflows
 ```
 
-The `frontend/` directory currently contains no frontend implementation or generated project files.
+The `frontend/` directory contains the Vite application, typed API client, routes, and shared UI foundation. Feature-specific product and vending controls will be added incrementally.
 
 ## Architecture
 
@@ -79,9 +80,29 @@ mvn spring-boot:run
 
 The backend is configured to listen on port `8080`. Start the external mock API first; backend startup fails if the initial catalog cannot be loaded.
 
+## Running the Frontend
+
+Use Node.js 24, then install the locked dependencies and start the Vite development server:
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Vite serves the frontend at `http://localhost:5173` by default. During development, requests under `/api` are proxied to the Spring Boot backend at `http://localhost:8080`, so the frontend uses relative API paths without additional CORS configuration.
+
+Create a production build with:
+
+```bash
+cd frontend
+npm ci
+npm run build
+```
+
 ## Continuous Integration
 
-GitHub Actions runs the Maven build and test suites for both Java projects with Java 21 on pushes to `main` and on pull requests. The workflow is defined in `.github/workflows/java-ci.yml`.
+GitHub Actions runs the Maven build and test suites for both Java projects with Java 21. A separate frontend workflow uses Node.js 24 to install locked npm dependencies, lint the source, and produce a TypeScript-checked Vite build. The workflows are defined in `.github/workflows/java-ci.yml` and `.github/workflows/frontend-ci.yml`.
 
 ## Publishing to GitHub
 
@@ -182,4 +203,4 @@ The future frontend will keep only the unsubmitted coin selection in local UI st
 
 ## Project Status
 
-The repository currently contains startup product loading, in-memory product CRUD APIs with pagination and soft deletion, backend-authoritative purchasing with exact change, a restartable in-memory coin till, the read-only external mock products API, and an empty `frontend/` directory. The responsive React application and its draft coin/reset interaction will be implemented separately.
+The repository currently contains startup product loading, in-memory product CRUD APIs with pagination and soft deletion, backend-authoritative purchasing with exact change, a restartable in-memory coin till, the read-only external mock products API, and a routed React frontend foundation with typed API contracts. Product management and vending interactions will be implemented separately.
