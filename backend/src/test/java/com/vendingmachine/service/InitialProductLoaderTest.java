@@ -33,8 +33,8 @@ class InitialProductLoaderTest {
                 .andExpect(method(org.springframework.http.HttpMethod.GET))
                 .andRespond(withSuccess("""
                         [
-                          {"id": 1, "name": "Coke", "price": 150},
-                          {"id": 2, "name": "Water", "price": 100}
+                          {"id": 1, "name": "Coke", "price": 150, "quantity": 10},
+                          {"id": 2, "name": "Water", "price": 100, "quantity": 15}
                         ]
                         """, MediaType.APPLICATION_JSON));
 
@@ -42,8 +42,8 @@ class InitialProductLoaderTest {
 
         assertThat(repository.findAll())
                 .hasSize(2)
-                .containsEntry(1, new Product(1, "Coke", 150))
-                .containsEntry(2, new Product(2, "Water", 100));
+                .containsEntry(1, new Product(1, "Coke", 150, 10))
+                .containsEntry(2, new Product(2, "Water", 100, 15));
         server.verify();
     }
 

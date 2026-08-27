@@ -31,6 +31,6 @@ public class InitialProductLoader implements ApplicationRunner {
     }
 
     private Product toProduct(ExternalProductDto product) {
-        return new Product(product.id(), product.name(), product.price());
+        return new Product(product.id(), product.name(), product.price(), product.quantity());
     }
 }

@@ -1,4 +1,4 @@
 package com.vendingmachine.dto;
 
-public record ExternalProductDto(int id, String name, int price) {
+public record ExternalProductDto(int id, String name, int price, int quantity) {
 }

@@ -30,18 +30,23 @@ class ProductsControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].name").value("Coke"))
                 .andExpect(jsonPath("$[0].price").value(150))
+                .andExpect(jsonPath("$[0].quantity").value(10))
                 .andExpect(jsonPath("$[1].id").value(2))
                 .andExpect(jsonPath("$[1].name").value("Water"))
                 .andExpect(jsonPath("$[1].price").value(100))
+                .andExpect(jsonPath("$[1].quantity").value(15))
                 .andExpect(jsonPath("$[2].id").value(3))
                 .andExpect(jsonPath("$[2].name").value("Orange Juice"))
                 .andExpect(jsonPath("$[2].price").value(200))
+                .andExpect(jsonPath("$[2].quantity").value(8))
                 .andExpect(jsonPath("$[3].id").value(4))
                 .andExpect(jsonPath("$[3].name").value("Chips"))
                 .andExpect(jsonPath("$[3].price").value(180))
+                .andExpect(jsonPath("$[3].quantity").value(12))
                 .andExpect(jsonPath("$[4].id").value(5))
                 .andExpect(jsonPath("$[4].name").value("Chocolate Bar"))
-                .andExpect(jsonPath("$[4].price").value(250));
+                .andExpect(jsonPath("$[4].price").value(250))
+                .andExpect(jsonPath("$[4].quantity").value(6));
     }
 
     @Test

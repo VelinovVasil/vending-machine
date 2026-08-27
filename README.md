@@ -118,7 +118,7 @@ It listens on port `3001`. Retrieve the catalog with:
 curl http://localhost:3001/products
 ```
 
-Product prices are expressed in integer EUR cents. The backend's mock API base URL is configured with:
+Each mock product includes its current `quantity`, with the initial values kept within the planned maximum stock of 15. Product prices are expressed in integer EUR cents. The backend's mock API base URL is configured with:
 
 ```properties
 vending.external-api.base-url=http://localhost:3001
