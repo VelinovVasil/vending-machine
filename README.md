@@ -45,7 +45,6 @@ Keeping CRUD changes local to backend memory is an explicit architectural decisi
 
 ## Planned Features
 
-- Initial product loading from the external mocked API
 - Product CRUD operations
 - A maximum stock of 15 items per product type
 - Supported coin validation
@@ -83,7 +82,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-The backend is configured to listen on port `8080`.
+The backend is configured to listen on port `8080`. Start the external mock API first; backend startup fails if the initial catalog cannot be loaded.
 
 ## Continuous Integration
 
@@ -125,8 +124,8 @@ Product prices are expressed in integer EUR cents. The backend's mock API base U
 vending.external-api.base-url=http://localhost:3001
 ```
 
-The Spring Boot backend will later call `GET /products` at this base URL when initializing its in-memory catalog. Product loading into the backend is not implemented yet.
+At startup, the Spring Boot backend calls `GET /products` at this base URL and replaces its in-memory product catalog with the returned products. The application state is an immutable map indexed by product ID. It is recreated from the external catalog on every backend restart and is never persisted back to the mock API.
 
 ## Project Status
 
-The repository currently contains the initial backend scaffold, the read-only external mock products API, and an empty `frontend/` directory for the future React application. Vending-machine functionality, backend product integration, in-memory state management, REST APIs, and the React application will be implemented incrementally.
+The repository currently contains the backend scaffold with startup product loading and in-memory catalog state, the read-only external mock products API, and an empty `frontend/` directory. Product CRUD APIs, vending-machine operations, transaction state, and the React application will be implemented incrementally.
