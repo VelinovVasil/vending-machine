@@ -80,8 +80,123 @@ a {
   line-height: 1.65;
 }
 
+.vending-page {
+  display: grid;
+  gap: 2rem;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1rem;
+}
+
+.product-card {
+  display: flex;
+  min-height: 11rem;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #dce2ec;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 0.2rem 0.8rem rgb(23 32 51 / 6%);
+}
+
+.product-card--out-of-stock {
+  background: #f1f3f6;
+  color: #687285;
+}
+
+.product-card h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.product-price {
+  margin: 0.6rem 0 0;
+  color: #275dad;
+  font-size: 1.35rem;
+  font-weight: 750;
+}
+
+.product-stock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: #5d687d;
+}
+
+.product-stock strong {
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  color: #8a2430;
+  background: #fdebed;
+  font-size: 0.85rem;
+}
+
+.catalog-status,
+.catalog-empty {
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px solid #dce2ec;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #5d687d;
+}
+
+.catalog-error {
+  border-color: #efb9bf;
+  background: #fff7f8;
+  color: #7d202c;
+}
+
+.catalog-error p {
+  margin: 0 0 1rem;
+}
+
+.catalog-error button,
+.pagination button {
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #275dad;
+  border-radius: 0.5rem;
+  color: #ffffff;
+  background: #275dad;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: #5d687d;
+}
+
+.pagination button:disabled {
+  border-color: #c9d0dc;
+  color: #7a8496;
+  background: #e7eaf0;
+  cursor: not-allowed;
+}
+
+.catalog-error button:hover,
+.pagination button:not(:disabled):hover {
+  background: #1e4b91;
+}
+
 @media (max-width: 36rem) {
   .navigation {
     flex-direction: column;
+  }
+
+  .pagination {
+    justify-content: space-between;
+    gap: 0.5rem;
   }
 }
