@@ -40,10 +40,10 @@ class InitialProductLoaderTest {
 
         loader.run(null);
 
-        assertThat(repository.findAll())
-                .hasSize(2)
-                .containsEntry(1, new Product(1, "Coke", 150, 10))
-                .containsEntry(2, new Product(2, "Water", 100, 15));
+        assertThat(repository.findActivePage(0, 10).content())
+                .containsExactly(
+                        new Product(1, "Coke", 150, 10, false),
+                        new Product(2, "Water", 100, 15, false));
         server.verify();
     }
 
@@ -60,7 +60,7 @@ class InitialProductLoaderTest {
 
         assertThatThrownBy(() -> loader.run(null))
                 .isInstanceOf(RestClientResponseException.class);
-        assertThat(repository.findAll()).isEmpty();
+        assertThat(repository.findActivePage(0, 10).content()).isEmpty();
         server.verify();
     }
 }

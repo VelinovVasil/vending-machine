@@ -124,8 +124,30 @@ Each mock product includes its current `quantity`, with the initial values kept 
 vending.external-api.base-url=http://localhost:3001
 ```
 
-At startup, the Spring Boot backend calls `GET /products` at this base URL and replaces its in-memory product catalog with the returned products. The application state is an immutable map indexed by product ID. It is recreated from the external catalog on every backend restart and is never persisted back to the mock API.
+At startup, the Spring Boot backend calls `GET /products` at this base URL and replaces its in-memory product catalog with the returned products. The mutable application state is held in a map indexed by product ID. It is recreated from the external catalog on every backend restart and is never persisted back to the mock API.
+
+## Product API
+
+The backend exposes product operations under `/api/products`:
+
+| Method | Endpoint | Behavior |
+| --- | --- | --- |
+| `GET` | `/api/products?page=0&size=20` | Lists active products in ascending ID order with pagination metadata |
+| `GET` | `/api/products/{id}` | Returns one active product |
+| `POST` | `/api/products` | Creates a product and returns `201 Created` |
+| `PUT` | `/api/products/{id}` | Fully replaces an active product's editable fields |
+| `DELETE` | `/api/products/{id}` | Soft-deletes a product and returns its last visible representation |
+
+Create and update requests contain `name`, `price`, and `quantity`. Names must not be blank and may contain at most 100 characters, prices must be positive integer cents, and quantities must be between 0 and 15. IDs are assigned by the backend.
+
+The list endpoint defaults to 20 items per page and accepts page sizes from 1 through 100. Its response contains `content`, `page`, `size`, `totalElements`, and `totalPages`.
+
+Pagination is performed inside the in-memory repository. Products are indexed in ascending ID order, the active-product total is maintained as repository state, and each request allocates only the requested page rather than scanning and copying the entire catalog into the service layer. The controller depends on the `ProductService` interface; `ProductServiceImpl` contains the current application-service implementation.
+
+Soft-deleted products remain in backend memory but are treated as absent by list, get, update, and repeated delete operations. The public product response deliberately does not expose the internal deletion marker. Invalid requests return `400 Bad Request`; missing or deleted products return `404 Not Found` using Spring's problem-details JSON format.
+
+These endpoints operate only on backend memory. The external mock API is called during startup to seed the catalog and is never updated by product API requests.
 
 ## Project Status
 
-The repository currently contains the backend scaffold with startup product loading and in-memory catalog state, the read-only external mock products API, and an empty `frontend/` directory. Product CRUD APIs, vending-machine operations, transaction state, and the React application will be implemented incrementally.
+The repository currently contains startup product loading, in-memory product CRUD APIs with pagination and soft deletion, the read-only external mock products API, and an empty `frontend/` directory. Vending-machine operations, transaction state, coin handling, and the React application will be implemented incrementally.
