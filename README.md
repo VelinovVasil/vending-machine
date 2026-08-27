@@ -2,7 +2,7 @@
 
 This repository contains a take-home assignment for a full-stack vending machine application. The backend is being built with Spring Boot, while a separate React frontend will provide the user interface.
 
-Both applications live under dedicated top-level directories in this repository. The `backend/` directory contains the Spring Boot application, and the `frontend/` directory is reserved for the future React application.
+The backend and frontend live under dedicated top-level directories in this repository. A third project, `mock-api/`, represents the external source of the initial product catalog.
 
 ## Tech Stack
 
@@ -22,6 +22,7 @@ vending-machine/
 │   ├── pom.xml
 │   └── src/       # Spring Boot backend source
 ├── frontend/      # Reserved for the React and TypeScript application
+├── mock-api/      # Read-only external mock products API
 └── .github/       # GitHub Actions workflows
 ```
 
@@ -86,7 +87,7 @@ The backend is configured to listen on port `8080`.
 
 ## Continuous Integration
 
-GitHub Actions runs the Maven build and test suite with Java 21 for pushes to `main` and for pull requests. The workflow is defined in `.github/workflows/backend-ci.yml`.
+GitHub Actions runs the Maven build and test suites for both Java projects with Java 21 on pushes to `main` and on pull requests. The workflow is defined in `.github/workflows/java-ci.yml`.
 
 ## Publishing to GitHub
 
@@ -103,14 +104,29 @@ Replace `<repository-url>` with the HTTPS or SSH URL shown by GitHub. Create the
 
 ## External Mock API
 
-A mocked products API will be added separately. Its base URL is configured with:
+The independently runnable mock API serves the initial product catalog from a static JSON resource. It has no database, mutable state, or write endpoints.
+
+Start it with:
+
+```bash
+cd mock-api
+mvn spring-boot:run
+```
+
+It listens on port `3001`. Retrieve the catalog with:
+
+```bash
+curl http://localhost:3001/products
+```
+
+Product prices are expressed in integer EUR cents. The backend's mock API base URL is configured with:
 
 ```properties
 vending.external-api.base-url=http://localhost:3001
 ```
 
-No mocked API implementation is included in this initial setup.
+The Spring Boot backend will later call `GET /products` at this base URL when initializing its in-memory catalog. Product loading into the backend is not implemented yet.
 
 ## Project Status
 
-The repository currently contains the initial backend scaffold under `backend/` plus an empty `frontend/` directory for the future React application. Vending-machine functionality, REST APIs, product integration, in-memory state management, and the React application will be implemented incrementally.
+The repository currently contains the initial backend scaffold, the read-only external mock products API, and an empty `frontend/` directory for the future React application. Vending-machine functionality, backend product integration, in-memory state management, REST APIs, and the React application will be implemented incrementally.

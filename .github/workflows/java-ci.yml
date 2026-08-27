@@ -1,4 +1,4 @@
-name: Backend CI
+name: Java CI
 
 on:
   push:
@@ -12,6 +12,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        service: [backend, mock-api]
 
     steps:
       - name: Check out repository
@@ -23,8 +26,8 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
-          cache-dependency-path: backend/pom.xml
+          cache-dependency-path: ${{ matrix.service }}/pom.xml
 
       - name: Build and test
         run: mvn --batch-mode --no-transfer-progress clean test
-        working-directory: backend
+        working-directory: ${{ matrix.service }}
