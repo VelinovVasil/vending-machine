@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { getProducts } from '../api/productsApi'
 import ProductGrid from '../components/products/ProductGrid'
-import type { ProductPageResponse } from '../types/product'
+import type { Product, ProductPageResponse } from '../types/product'
+import { formatMoney } from '../utils/money'
 
 const PAGE_SIZE = 12
 
@@ -9,6 +10,7 @@ function VendingPage() {
   const [page, setPage] = useState(0)
   const [retryCount, setRetryCount] = useState(0)
   const [productPage, setProductPage] = useState<ProductPageResponse | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -18,6 +20,20 @@ function VendingPage() {
       .then((response) => {
         if (!ignoreResult) {
           setProductPage(response)
+          setSelectedProduct((currentSelection) => {
+            if (currentSelection === null) {
+              return null
+            }
+
+            const refreshedProduct = response.content.find(
+              (product) => product.id === currentSelection.id,
+            )
+            if (refreshedProduct === undefined) {
+              return currentSelection
+            }
+
+            return refreshedProduct.quantity === 0 ? null : refreshedProduct
+          })
         }
       })
       .catch((reason: unknown) => {
@@ -52,6 +68,14 @@ function VendingPage() {
         <p>Browse the products currently available in the machine.</p>
       </div>
 
+      {selectedProduct !== null && (
+        <aside className="selected-product-summary" aria-live="polite">
+          <span>Selected product</span>
+          <strong>{selectedProduct.name}</strong>
+          <span>{formatMoney(selectedProduct.price)}</span>
+        </aside>
+      )}
+
       {isLoading && (
         <p className="catalog-status" role="status">
           Loading products…
@@ -69,7 +93,11 @@ function VendingPage() {
 
       {productPage !== null && (
         <>
-          <ProductGrid products={productPage.content} />
+          <ProductGrid
+            products={productPage.content}
+            selectedProductId={selectedProduct?.id ?? null}
+            onSelect={setSelectedProduct}
+          />
 
           <nav className="pagination" aria-label="Product catalog pages">
             <button

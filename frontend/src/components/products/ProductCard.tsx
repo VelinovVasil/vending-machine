@@ -3,23 +3,39 @@ import { formatMoney } from '../../utils/money'
 
 interface ProductCardProps {
   product: Product
+  isSelected: boolean
+  onSelect: (product: Product) => void
 }
 
-function ProductCard({ product }: ProductCardProps) {
+function ProductCard({ product, isSelected, onSelect }: ProductCardProps) {
   const isOutOfStock = product.quantity === 0
+  const className = [
+    'product-card',
+    isSelected ? 'product-card--selected' : '',
+    isOutOfStock ? 'product-card--out-of-stock' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
-    <article className={`product-card${isOutOfStock ? ' product-card--out-of-stock' : ''}`}>
-      <div>
-        <h2>{product.name}</h2>
-        <p className="product-price">{formatMoney(product.price)}</p>
-      </div>
+    <button
+      type="button"
+      role="radio"
+      aria-checked={isSelected}
+      className={className}
+      disabled={isOutOfStock}
+      onClick={() => onSelect(product)}
+    >
+      <span className="product-details">
+        <span className="product-name">{product.name}</span>
+        <span className="product-price">{formatMoney(product.price)}</span>
+      </span>
 
-      <div className="product-stock">
+      <span className="product-stock">
         <span>Quantity: {product.quantity}</span>
         {isOutOfStock && <strong>Out of stock</strong>}
-      </div>
-    </article>
+      </span>
+    </button>
   )
 }
 
