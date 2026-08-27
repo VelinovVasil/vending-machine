@@ -18,9 +18,14 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final InMemoryProductRepository productRepository;
+    private final VendingMachineStateCoordinator stateCoordinator;
 
     @Override
     public ProductPageResponse findAll(int page, int size) {
+        return stateCoordinator.read(() -> findAllLocked(page, size));
+    }
+
+    private ProductPageResponse findAllLocked(int page, int size) {
         PageResult<Product> productPage = productRepository.findActivePage(page, size);
         List<ProductResponse> content = productPage.content().stream()
                 .map(this::toResponse)
@@ -36,30 +41,33 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse findById(int id) {
-        return productRepository.findById(id)
+        return stateCoordinator.read(() -> productRepository.findById(id)
                 .filter(product -> !product.deleted())
                 .map(this::toResponse)
-                .orElseThrow(() -> new ProductNotFoundException(id));
+                .orElseThrow(() -> new ProductNotFoundException(id)));
     }
 
     @Override
     public ProductResponse create(CreateProductRequest request) {
-        Product product = productRepository.create(request.name(), request.price(), request.quantity());
-        return toResponse(product);
+        return stateCoordinator.write(() -> {
+            Product product = productRepository.create(request.name(), request.price(), request.quantity());
+            return toResponse(product);
+        });
     }
 
     @Override
     public ProductResponse update(int id, UpdateProductRequest request) {
-        return productRepository.update(id, request.name(), request.price(), request.quantity())
+        return stateCoordinator.write(() -> productRepository
+                .update(id, request.name(), request.price(), request.quantity())
                 .map(this::toResponse)
-                .orElseThrow(() -> new ProductNotFoundException(id));
+                .orElseThrow(() -> new ProductNotFoundException(id)));
     }
 
     @Override
     public ProductResponse delete(int id) {
-        return productRepository.softDelete(id)
+        return stateCoordinator.write(() -> productRepository.softDelete(id)
                 .map(this::toResponse)
-                .orElseThrow(() -> new ProductNotFoundException(id));
+                .orElseThrow(() -> new ProductNotFoundException(id)));
     }
 
     private ProductResponse toResponse(Product product) {

@@ -27,7 +27,9 @@ class InitialProductLoaderTest {
         MockRestServiceServer server = MockRestServiceServer.bindTo(restClientBuilder).build();
         InMemoryProductRepository repository = new InMemoryProductRepository();
         InitialProductLoader loader = new InitialProductLoader(
-                new ProductCatalogClient(restClientBuilder, BASE_URL), repository);
+                new ProductCatalogClient(restClientBuilder, BASE_URL),
+                repository,
+                new VendingMachineStateCoordinator());
 
         server.expect(once(), requestTo(BASE_URL + "/products"))
                 .andExpect(method(org.springframework.http.HttpMethod.GET))
@@ -53,7 +55,9 @@ class InitialProductLoaderTest {
         MockRestServiceServer server = MockRestServiceServer.bindTo(restClientBuilder).build();
         InMemoryProductRepository repository = new InMemoryProductRepository();
         InitialProductLoader loader = new InitialProductLoader(
-                new ProductCatalogClient(restClientBuilder, BASE_URL), repository);
+                new ProductCatalogClient(restClientBuilder, BASE_URL),
+                repository,
+                new VendingMachineStateCoordinator());
 
         server.expect(once(), requestTo(BASE_URL + "/products"))
                 .andRespond(withServerError());

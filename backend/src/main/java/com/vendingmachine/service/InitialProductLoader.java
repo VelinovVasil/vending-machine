@@ -19,6 +19,7 @@ public class InitialProductLoader implements ApplicationRunner {
 
     private final ProductCatalogClient productCatalogClient;
     private final InMemoryProductRepository productRepository;
+    private final VendingMachineStateCoordinator stateCoordinator;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -26,7 +27,7 @@ public class InitialProductLoader implements ApplicationRunner {
                 .map(this::toProduct)
                 .toList();
 
-        productRepository.replaceAll(products);
+        stateCoordinator.write(() -> productRepository.replaceAll(products));
         log.info("Loaded {} products from the external products API", products.size());
     }
 

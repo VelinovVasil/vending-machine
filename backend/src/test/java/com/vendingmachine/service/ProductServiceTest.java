@@ -28,7 +28,7 @@ class ProductServiceTest {
                 new Product(2, "Water", 100, 15, true),
                 new Product(1, "Coke", 150, 10, false),
                 new Product(3, "Orange Juice", 200, 8, false)));
-        service = new ProductServiceImpl(repository);
+        service = new ProductServiceImpl(repository, new VendingMachineStateCoordinator());
     }
 
     @Test

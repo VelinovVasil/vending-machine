@@ -17,6 +17,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class InMemoryProductRepository {
 
     private static final int MAX_PAGE_SIZE = 100;
+    private static final int MAX_PRODUCT_QUANTITY = 15;
+    private static final int MINIMUM_PRICE_INCREMENT = 10;
 
     private final ConcurrentNavigableMap<Integer, Product> productsById = new ConcurrentSkipListMap<>();
     private int nextProductId = 1;
@@ -26,6 +28,7 @@ public class InMemoryProductRepository {
         Map<Integer, Product> replacement = new HashMap<>();
 
         for (Product product : products) {
+            validateProduct(product);
             Product existing = replacement.putIfAbsent(product.id(), product);
             if (Objects.nonNull(existing)) {
                 throw new IllegalArgumentException("Duplicate product id: " + product.id());
@@ -85,6 +88,7 @@ public class InMemoryProductRepository {
     public synchronized Product create(String name, int price, int quantity) {
         int id = nextProductId++;
         Product product = new Product(id, name, price, quantity, false);
+        validateProduct(product);
         productsById.put(id, product);
         activeProductCount++;
         return product;
@@ -97,6 +101,7 @@ public class InMemoryProductRepository {
         }
 
         Product updated = new Product(id, name, price, quantity, false);
+        validateProduct(updated);
         productsById.put(id, updated);
         return Optional.of(updated);
     }
@@ -112,5 +117,36 @@ public class InMemoryProductRepository {
         productsById.put(id, deleted);
         activeProductCount--;
         return Optional.of(deleted);
+    }
+
+    public synchronized Optional<Product> decrementQuantity(int id) {
+        Product existing = productsById.get(id);
+        if (Objects.isNull(existing) || existing.deleted() || existing.quantity() == 0) {
+            return Optional.empty();
+        }
+
+        Product updated = new Product(
+                existing.id(),
+                existing.name(),
+                existing.price(),
+                existing.quantity() - 1,
+                false);
+        productsById.put(id, updated);
+        return Optional.of(updated);
+    }
+
+    private void validateProduct(Product product) {
+        if (product.id() <= 0) {
+            throw new IllegalArgumentException("Product id must be positive");
+        }
+        if (product.name() == null || product.name().isBlank() || product.name().length() > 100) {
+            throw new IllegalArgumentException("Product name must contain between 1 and 100 characters");
+        }
+        if (product.price() <= 0 || product.price() % MINIMUM_PRICE_INCREMENT != 0) {
+            throw new IllegalArgumentException("Product price must be a positive multiple of 10 cents");
+        }
+        if (product.quantity() < 0 || product.quantity() > MAX_PRODUCT_QUANTITY) {
+            throw new IllegalArgumentException("Product quantity must be between 0 and 15");
+        }
     }
 }

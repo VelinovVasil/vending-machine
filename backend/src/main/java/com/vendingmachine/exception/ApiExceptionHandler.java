@@ -1,6 +1,7 @@
 package com.vendingmachine.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -22,11 +23,24 @@ public class ApiExceptionHandler {
     public ProblemDetail handleProductNotFound(ProductNotFoundException exception) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
         problem.setTitle("Product not found");
+        problem.setProperty("errorCode", "PRODUCT_NOT_FOUND");
+        return problem;
+    }
+
+    @ExceptionHandler(PurchaseDeclinedException.class)
+    public ProblemDetail handlePurchaseDeclined(PurchaseDeclinedException exception) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(exception.status(), exception.getMessage());
+        problem.setTitle("Purchase declined");
+        problem.setProperty("errorCode", exception.errorCode());
+        problem.setProperty("returnedCoins", exception.returnedCoins());
+        exception.properties().forEach(problem::setProperty);
         return problem;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ProblemDetail handleRequestValidation(MethodArgumentNotValidException exception) {
+    public ProblemDetail handleRequestValidation(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request) {
         Map<String, String> errors = new LinkedHashMap<>();
         for (FieldError fieldError : exception.getBindingResult().getFieldErrors()) {
             errors.putIfAbsent(fieldError.getField(), fieldError.getDefaultMessage());
@@ -34,11 +48,14 @@ public class ApiExceptionHandler {
 
         ProblemDetail problem = badRequest("Request body validation failed");
         problem.setProperty("errors", errors);
+        problem.setProperty("errorCode", validationErrorCode(request));
         return problem;
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
-    public ProblemDetail handleMethodValidation(HandlerMethodValidationException exception) {
+    public ProblemDetail handleMethodValidation(
+            HandlerMethodValidationException exception,
+            HttpServletRequest request) {
         Map<String, String> errors = new LinkedHashMap<>();
         exception.getParameterValidationResults().stream()
                 .filter(ParameterErrors.class::isInstance)
@@ -49,25 +66,40 @@ public class ApiExceptionHandler {
         if (!errors.isEmpty()) {
             ProblemDetail problem = badRequest("Request body validation failed");
             problem.setProperty("errors", errors);
+            problem.setProperty("errorCode", validationErrorCode(request));
             return problem;
         }
 
-        return badRequest("Request parameter validation failed");
+        ProblemDetail problem = badRequest("Request parameter validation failed");
+        problem.setProperty("errorCode", validationErrorCode(request));
+        return problem;
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ProblemDetail handleConstraintViolation(ConstraintViolationException exception) {
-        return badRequest("Request parameter validation failed");
+    public ProblemDetail handleConstraintViolation(
+            ConstraintViolationException exception,
+            HttpServletRequest request) {
+        ProblemDetail problem = badRequest("Request parameter validation failed");
+        problem.setProperty("errorCode", validationErrorCode(request));
+        return problem;
     }
 
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
-    public ProblemDetail handleMalformedRequest(Exception exception) {
-        return badRequest("Request could not be parsed");
+    public ProblemDetail handleMalformedRequest(Exception exception, HttpServletRequest request) {
+        ProblemDetail problem = badRequest("Request could not be parsed");
+        problem.setProperty("errorCode", validationErrorCode(request));
+        return problem;
     }
 
     private ProblemDetail badRequest(String detail) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
         problem.setTitle("Invalid request");
         return problem;
+    }
+
+    private String validationErrorCode(HttpServletRequest request) {
+        return request.getRequestURI().startsWith("/api/vending/purchases")
+                ? "INVALID_COIN_SELECTION"
+                : "INVALID_REQUEST";
     }
 }

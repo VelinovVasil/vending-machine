@@ -4,6 +4,7 @@ import com.vendingmachine.exception.ApiExceptionHandler;
 import com.vendingmachine.model.Product;
 import com.vendingmachine.repository.InMemoryProductRepository;
 import com.vendingmachine.service.ProductServiceImpl;
+import com.vendingmachine.service.VendingMachineStateCoordinator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
-@Import({ProductServiceImpl.class, InMemoryProductRepository.class, ApiExceptionHandler.class})
+@Import({
+        ProductServiceImpl.class,
+        InMemoryProductRepository.class,
+        VendingMachineStateCoordinator.class,
+        ApiExceptionHandler.class
+})
 class ProductControllerIntegrationTest {
 
     @Autowired
@@ -136,6 +142,14 @@ class ProductControllerIntegrationTest {
                 .andExpect(jsonPath("$.errors.name").exists())
                 .andExpect(jsonPath("$.errors.price").exists())
                 .andExpect(jsonPath("$.errors.quantity").exists());
+
+        mockMvc.perform(post("/api/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Invalid Price","price":155,"quantity":1}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.price").exists());
 
         mockMvc.perform(put("/api/products/1")
                         .contentType(MediaType.APPLICATION_JSON)

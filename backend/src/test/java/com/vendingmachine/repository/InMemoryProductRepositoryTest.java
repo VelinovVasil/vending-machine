@@ -90,4 +90,12 @@ class InMemoryProductRepositoryTest {
         repository.replaceAll(List.of(new Product(2, "Juice", 200, 8, false)));
         assertThat(repository.create("Chips", 180, 12).id()).isEqualTo(3);
     }
+
+    @Test
+    void rejectsCatalogPricesThatCannotBePaidWithAcceptedCoins() {
+        assertThatThrownBy(() -> repository.replaceAll(List.of(
+                new Product(1, "Invalid Price", 155, 1, false))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Product price must be a positive multiple of 10 cents");
+    }
 }

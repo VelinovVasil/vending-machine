@@ -38,25 +38,20 @@ The intended product-data flow is:
 4. CRUD operations modify only the application's in-memory state.
 5. Those changes are intentionally not persisted back to the mocked external API.
 6. Restarting the backend therefore resets the application's product state and reloads the initial catalog.
-7. Vending operations and business rules will be handled by the Spring Boot backend.
+7. Vending operations and business rules are handled by the Spring Boot backend.
 8. React will act primarily as the presentation layer and communicate with the backend through REST APIs.
 
 Keeping CRUD changes local to backend memory is an explicit architectural decision based on the assignment requirement that product changes do not need to update the external resource. The external API seeds the catalog; it is not the application's persistence layer.
 
 ## Planned Features
 
-- Product CRUD operations
-- A maximum stock of 15 items per product type
-- Supported coin validation
-- Coin insertion
-- Product purchase
-- Exact change calculation
-- Transaction cancellation and refund
+- Frontend coin insertion controls
+- Frontend transaction reset and refund presentation
 - A responsive React frontend
 
 ## Accepted Currency and Coins
 
-The vending machine will use EUR and is planned to accept:
+The vending machine uses EUR and accepts:
 
 - €0.10
 - €0.20
@@ -64,7 +59,7 @@ The vending machine will use EUR and is planned to accept:
 - €1.00
 - €2.00
 
-All monetary calculations will use integer cents rather than floating-point values.
+All monetary calculations use integer cents rather than floating-point values. Product prices must be positive multiples of €0.10.
 
 ## Running the Backend
 
@@ -138,7 +133,7 @@ The backend exposes product operations under `/api/products`:
 | `PUT` | `/api/products/{id}` | Fully replaces an active product's editable fields |
 | `DELETE` | `/api/products/{id}` | Soft-deletes a product and returns its last visible representation |
 
-Create and update requests contain `name`, `price`, and `quantity`. Names must not be blank and may contain at most 100 characters, prices must be positive integer cents, and quantities must be between 0 and 15. IDs are assigned by the backend.
+Create and update requests contain `name`, `price`, and `quantity`. Names must not be blank and may contain at most 100 characters, prices must be positive integer cents divisible by 10, and quantities must be between 0 and 15. IDs are assigned by the backend.
 
 The list endpoint defaults to 20 items per page and accepts page sizes from 1 through 100. Its response contains `content`, `page`, `size`, `totalElements`, and `totalPages`.
 
@@ -148,6 +143,43 @@ Soft-deleted products remain in backend memory but are treated as absent by list
 
 These endpoints operate only on backend memory. The external mock API is called during startup to seed the catalog and is never updated by product API requests.
 
+## Vending API
+
+The backend exposes the vending workflow under `/api/vending`:
+
+| Method | Endpoint | Behavior |
+| --- | --- | --- |
+| `GET` | `/api/vending/denominations` | Returns the EUR currency and accepted coin denominations in cents |
+| `POST` | `/api/vending/purchases` | Validates payment, dispenses one product, and returns exact change |
+
+A purchase submits one product ID and denomination/count pairs:
+
+```json
+{
+  "productId": 1,
+  "coins": [
+    {"denomination": 100, "quantity": 1},
+    {"denomination": 50, "quantity": 2}
+  ]
+}
+```
+
+Denominations must be unique and supported, quantities must be positive, and one request may contain at most 100 coins. A successful response contains the updated product, the inserted and change amounts in cents, and the exact coins returned as change.
+
+The backend maintains its own in-memory coin inventory. Each denomination starts with 10 coins by default and can be configured independently:
+
+```properties
+vending.coins.initial-inventory[10]=10
+vending.coins.initial-inventory[20]=10
+vending.coins.initial-inventory[50]=10
+vending.coins.initial-inventory[100]=10
+vending.coins.initial-inventory[200]=10
+```
+
+Submitted coins are tentatively available when calculating change. The bounded change algorithm respects available quantities, returns exact change with the fewest coins, and prefers larger denominations when equivalent solutions exist. Product stock and the coin till are committed together under a process-local read/write lock. A declined purchase changes neither state and returns problem-details JSON with a stable `errorCode` and the submitted `returnedCoins`.
+
+The future frontend will keep only the unsubmitted coin selection in local UI state. Clearing that selection represents transaction reset/refund and requires no backend call because the backend does not accept or mutate coin state before a purchase request succeeds.
+
 ## Project Status
 
-The repository currently contains startup product loading, in-memory product CRUD APIs with pagination and soft deletion, the read-only external mock products API, and an empty `frontend/` directory. Vending-machine operations, transaction state, coin handling, and the React application will be implemented incrementally.
+The repository currently contains startup product loading, in-memory product CRUD APIs with pagination and soft deletion, backend-authoritative purchasing with exact change, a restartable in-memory coin till, the read-only external mock products API, and an empty `frontend/` directory. The responsive React application and its draft coin/reset interaction will be implemented separately.
