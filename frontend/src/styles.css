@@ -134,6 +134,10 @@ a {
   cursor: not-allowed;
 }
 
+.product-card:disabled:not(.product-card--out-of-stock) {
+  cursor: wait;
+}
+
 .product-details {
   display: grid;
   gap: 0.6rem;
@@ -236,6 +240,180 @@ a {
   background: #1e4b91;
 }
 
+.vending-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.transaction-panel,
+.purchase-result {
+  padding: 1.25rem;
+  border: 1px solid #dce2ec;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 0.2rem 0.8rem rgb(23 32 51 / 6%);
+}
+
+.panel-heading {
+  margin-bottom: 1.25rem;
+}
+
+.panel-heading h2,
+.purchase-result h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.panel-heading p {
+  margin: 0.4rem 0 0;
+  color: #5d687d;
+  line-height: 1.5;
+}
+
+.coin-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.coin-button {
+  display: inline-flex;
+  min-width: 5.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #8aa9d7;
+  border-radius: 999px;
+  color: #1e4b91;
+  background: #eef4fc;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.coin-button strong {
+  font-size: 0.82rem;
+}
+
+.coin-button:not(:disabled):hover {
+  background: #dce9fa;
+}
+
+.coin-button:disabled {
+  color: #7a8496;
+  background: #e7eaf0;
+  cursor: wait;
+}
+
+.transaction-details,
+.purchase-details {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+}
+
+.transaction-details div,
+.purchase-details div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.transaction-details dt,
+.purchase-details dt {
+  color: #5d687d;
+  font-size: 0.9rem;
+}
+
+.transaction-details dd,
+.purchase-details dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.transaction-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.primary-action,
+.secondary-action {
+  padding: 0.7rem 1rem;
+  border-radius: 0.5rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary-action {
+  border: 1px solid #275dad;
+  color: #ffffff;
+  background: #275dad;
+}
+
+.secondary-action {
+  border: 1px solid #8a94a6;
+  color: #374156;
+  background: #ffffff;
+}
+
+.primary-action:not(:disabled):hover {
+  background: #1e4b91;
+}
+
+.secondary-action:not(:disabled):hover {
+  background: #eef2f8;
+}
+
+.primary-action:disabled,
+.secondary-action:disabled {
+  border-color: #c9d0dc;
+  color: #7a8496;
+  background: #e7eaf0;
+  cursor: not-allowed;
+}
+
+.purchase-result {
+  border-left-width: 4px;
+}
+
+.purchase-result--success {
+  border-left-color: #24824b;
+  background: #f3fbf6;
+}
+
+.purchase-result--error {
+  border-left-color: #b52d3d;
+  background: #fff7f8;
+  color: #7d202c;
+}
+
+.purchase-result h2 {
+  margin-bottom: 1rem;
+}
+
+.purchase-result--error > p {
+  margin: 0;
+}
+
+.coin-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.refund-details {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
 @media (max-width: 36rem) {
   .navigation {
     flex-direction: column;
@@ -244,5 +422,13 @@ a {
   .pagination {
     justify-content: space-between;
     gap: 0.5rem;
+  }
+
+  .vending-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .coin-button {
+    flex: 1 1 7rem;
   }
 }

@@ -4,10 +4,16 @@ import ProductCard from './ProductCard'
 interface ProductGridProps {
   products: Product[]
   selectedProductId: number | null
+  disabled?: boolean
   onSelect: (product: Product) => void
 }
 
-function ProductGrid({ products, selectedProductId, onSelect }: ProductGridProps) {
+function ProductGrid({
+  products,
+  selectedProductId,
+  disabled = false,
+  onSelect,
+}: ProductGridProps) {
   if (products.length === 0) {
     return <p className="catalog-empty">No products are currently available.</p>
   }
@@ -19,6 +25,7 @@ function ProductGrid({ products, selectedProductId, onSelect }: ProductGridProps
           key={product.id}
           product={product}
           isSelected={product.id === selectedProductId}
+          disabled={disabled}
           onSelect={onSelect}
         />
       ))}
