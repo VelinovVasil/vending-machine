@@ -1,6 +1,6 @@
 # Vending Machine
 
-This repository contains a take-home assignment for a full-stack vending machine application. The backend is being built with Spring Boot, while a separate React frontend will provide the user interface.
+This repository contains a take-home assignment for a full-stack vending machine application. The backend is being built with Spring Boot, while a separate React frontend provides the user interface.
 
 The backend and frontend live under dedicated top-level directories in this repository. A third project, `mock-api/`, represents the external source of the initial product catalog.
 
@@ -103,19 +103,6 @@ npm run build
 ## Continuous Integration
 
 GitHub Actions runs the Maven build and test suites for both Java projects with Java 21. A separate frontend workflow uses Node.js 24 to install locked npm dependencies, lint the source, and produce a TypeScript-checked Vite build. The workflows are defined in `.github/workflows/java-ci.yml` and `.github/workflows/frontend-ci.yml`.
-
-## Publishing to GitHub
-
-After creating an empty repository on GitHub, create the first commit and connect this local repository:
-
-```bash
-git add .
-git commit -m "Initial backend scaffold"
-git remote add origin <repository-url>
-git push -u origin main
-```
-
-Replace `<repository-url>` with the HTTPS or SSH URL shown by GitHub. Create the GitHub repository without generated README, `.gitignore`, or license files because those can conflict with the files already present locally.
 
 ## External Mock API
 
