@@ -340,7 +340,8 @@ a {
 }
 
 .primary-action,
-.secondary-action {
+.secondary-action,
+.danger-action {
   padding: 0.7rem 1rem;
   border-radius: 0.5rem;
   font: inherit;
@@ -360,6 +361,12 @@ a {
   background: #ffffff;
 }
 
+.danger-action {
+  border: 1px solid #b52d3d;
+  color: #ffffff;
+  background: #b52d3d;
+}
+
 .primary-action:not(:disabled):hover {
   background: #1e4b91;
 }
@@ -368,8 +375,13 @@ a {
   background: #eef2f8;
 }
 
+.danger-action:not(:disabled):hover {
+  background: #8f2230;
+}
+
 .primary-action:disabled,
-.secondary-action:disabled {
+.secondary-action:disabled,
+.danger-action:disabled {
   border-color: #c9d0dc;
   color: #7a8496;
   background: #e7eaf0;
@@ -414,6 +426,183 @@ a {
   margin-top: 1rem;
 }
 
+.products-page {
+  display: grid;
+  gap: 2rem;
+}
+
+.management-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.management-heading > button {
+  flex: 0 0 auto;
+}
+
+.management-message,
+.product-editor,
+.delete-confirmation {
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px solid #dce2ec;
+  border-radius: 0.75rem;
+  background: #ffffff;
+}
+
+.management-message--success {
+  border-color: #a9d8ba;
+  background: #f3fbf6;
+  color: #176338;
+}
+
+.management-message--error {
+  border-color: #efb9bf;
+  background: #fff7f8;
+  color: #7d202c;
+}
+
+.product-editor,
+.delete-confirmation {
+  box-shadow: 0 0.2rem 0.8rem rgb(23 32 51 / 6%);
+}
+
+.product-editor h2,
+.delete-confirmation h2,
+.management-list-heading h2,
+.management-card h2 {
+  margin: 0;
+}
+
+.product-form {
+  display: grid;
+  grid-template-columns: minmax(12rem, 2fr) repeat(2, minmax(8rem, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.form-field {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+}
+
+.form-field label {
+  color: #374156;
+  font-weight: 700;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid #aeb7c6;
+  border-radius: 0.5rem;
+  color: #172033;
+  background: #ffffff;
+  font: inherit;
+}
+
+.form-field input:focus {
+  border-color: #275dad;
+  outline: 3px solid rgb(39 93 173 / 20%);
+}
+
+.form-field input[aria-invalid="true"] {
+  border-color: #b52d3d;
+}
+
+.form-field input:disabled {
+  background: #eef1f5;
+}
+
+.field-error {
+  color: #9a2634;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  grid-column: 1 / -1;
+}
+
+.delete-confirmation {
+  border-color: #efb9bf;
+  background: #fffafb;
+}
+
+.delete-confirmation p {
+  margin: 0.65rem 0 1.25rem;
+  color: #5d687d;
+  line-height: 1.5;
+}
+
+.management-list-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.management-list-heading span,
+.management-card-id {
+  color: #687285;
+  font-size: 0.9rem;
+}
+
+.product-management-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 1rem;
+}
+
+.management-card {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid #dce2ec;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 0.2rem 0.8rem rgb(23 32 51 / 6%);
+}
+
+.management-card h2 {
+  margin-top: 0.3rem;
+  font-size: 1.2rem;
+}
+
+.management-card-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+.management-card-details div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.management-card-details dt {
+  color: #687285;
+  font-size: 0.88rem;
+}
+
+.management-card-details dd {
+  margin: 0;
+  font-weight: 750;
+}
+
+.management-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
 @media (max-width: 36rem) {
   .navigation {
     flex-direction: column;
@@ -430,5 +619,22 @@ a {
 
   .coin-button {
     flex: 1 1 7rem;
+  }
+
+  .management-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .management-heading > button {
+    width: 100%;
+  }
+
+  .product-form {
+    grid-template-columns: 1fr;
+  }
+
+  .management-card-actions button {
+    flex: 1;
   }
 }
