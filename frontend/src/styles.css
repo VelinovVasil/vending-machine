@@ -403,12 +403,22 @@ a {
   color: #7d202c;
 }
 
+.purchase-result--return {
+  border-left-color: #275dad;
+  background: #eef4fc;
+}
+
 .purchase-result h2 {
   margin-bottom: 1rem;
 }
 
 .purchase-result--error > p {
   margin: 0;
+}
+
+.purchase-result--return > p {
+  margin: 0 0 1rem;
+  color: #49546a;
 }
 
 .coin-breakdown {

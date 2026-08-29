@@ -196,4 +196,4 @@ vending.coins.initial-inventory[200]=10
 
 Submitted coins are tentatively available when calculating change. The bounded change algorithm respects available quantities, returns exact change with the fewest coins, and prefers larger denominations when equivalent solutions exist. Product stock and the coin till are committed together under a process-local read/write lock. A declined purchase changes neither state and returns problem-details JSON with a stable `errorCode` and the submitted `returnedCoins`.
 
-The frontend keeps the pending coin selection in local UI state. Reset clears the selected product and all pending coin counts before purchase. This represents returning the unsubmitted coins and requires no backend call because the backend does not accept or mutate coin state until a purchase request succeeds.
+The frontend keeps the pending coin selection in local UI state. Reset clears the selected product and all pending coin counts before purchase, then confirms the returned denomination and quantity of each coin. This requires no backend call because the backend does not accept or mutate coin state until a purchase request succeeds.

@@ -26,6 +26,7 @@ function VendingPage() {
   const [isPurchasing, setIsPurchasing] = useState(false)
   const [purchaseResult, setPurchaseResult] = useState<PurchaseResponse | null>(null)
   const [purchaseFailure, setPurchaseFailure] = useState<PurchaseFailure | null>(null)
+  const [returnedCoins, setReturnedCoins] = useState<CoinQuantity[] | null>(null)
 
   useEffect(() => {
     let ignoreResult = false
@@ -106,6 +107,7 @@ function VendingPage() {
   function clearPurchaseFeedback() {
     setPurchaseResult(null)
     setPurchaseFailure(null)
+    setReturnedCoins(null)
   }
 
   function selectProduct(product: Product) {
@@ -124,7 +126,9 @@ function VendingPage() {
   function resetTransaction() {
     setSelectedProduct(null)
     setInsertedCoins({})
-    clearPurchaseFeedback()
+    setPurchaseResult(null)
+    setPurchaseFailure(null)
+    setReturnedCoins(coinSelection.length > 0 ? coinSelection : null)
   }
 
   const coinSelection: CoinQuantity[] = Object.entries(insertedCoins)
@@ -271,7 +275,11 @@ function VendingPage() {
         />
       </div>
 
-      <PurchaseResult result={purchaseResult} failure={purchaseFailure} />
+      <PurchaseResult
+        result={purchaseResult}
+        failure={purchaseFailure}
+        returnedCoins={returnedCoins}
+      />
     </section>
   )
 }

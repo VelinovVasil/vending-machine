@@ -9,6 +9,7 @@ export interface PurchaseFailure {
 interface PurchaseResultProps {
   result: PurchaseResponse | null
   failure: PurchaseFailure | null
+  returnedCoins: CoinQuantity[] | null
 }
 
 function CoinBreakdown({ coins }: { coins: CoinQuantity[] }) {
@@ -27,7 +28,7 @@ function CoinBreakdown({ coins }: { coins: CoinQuantity[] }) {
   )
 }
 
-function PurchaseResult({ result, failure }: PurchaseResultProps) {
+function PurchaseResult({ result, failure, returnedCoins }: PurchaseResultProps) {
   if (result !== null) {
     return (
       <section className="purchase-result purchase-result--success" aria-live="polite">
@@ -69,6 +70,16 @@ function PurchaseResult({ result, failure }: PurchaseResultProps) {
             <CoinBreakdown coins={failure.returnedCoins} />
           </div>
         )}
+      </section>
+    )
+  }
+
+  if (returnedCoins !== null) {
+    return (
+      <section className="purchase-result purchase-result--return" aria-live="polite">
+        <h2>Coins returned</h2>
+        <p>The transaction was reset without a purchase. Your pending coins were returned:</p>
+        <CoinBreakdown coins={returnedCoins} />
       </section>
     )
   }
