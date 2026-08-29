@@ -1,5 +1,6 @@
 package com.vendingmachine.repository;
 
+import com.vendingmachine.exception.DuplicateProductPriceException;
 import com.vendingmachine.model.PageResult;
 import com.vendingmachine.model.Product;
 import org.springframework.stereotype.Repository;
@@ -34,6 +35,8 @@ public class InMemoryProductRepository {
                 throw new IllegalArgumentException("Duplicate product id: " + product.id());
             }
         }
+
+        validateDistinctActivePrices(replacement.values());
 
         productsById.clear();
         productsById.putAll(replacement);
@@ -86,10 +89,12 @@ public class InMemoryProductRepository {
     }
 
     public synchronized Product create(String name, int price, int quantity) {
-        int id = nextProductId++;
+        int id = nextProductId;
         Product product = new Product(id, name, price, quantity, false);
         validateProduct(product);
+        ensureActivePriceAvailable(price, null);
         productsById.put(id, product);
+        nextProductId++;
         activeProductCount++;
         return product;
     }
@@ -102,6 +107,7 @@ public class InMemoryProductRepository {
 
         Product updated = new Product(id, name, price, quantity, false);
         validateProduct(updated);
+        ensureActivePriceAvailable(price, id);
         productsById.put(id, updated);
         return Optional.of(updated);
     }
@@ -147,6 +153,30 @@ public class InMemoryProductRepository {
         }
         if (product.quantity() < 0 || product.quantity() > MAX_PRODUCT_QUANTITY) {
             throw new IllegalArgumentException("Product quantity must be between 0 and 15");
+        }
+    }
+
+    private void validateDistinctActivePrices(Collection<Product> products) {
+        Map<Integer, Integer> productIdsByPrice = new HashMap<>();
+        for (Product product : products) {
+            if (product.deleted()) {
+                continue;
+            }
+
+            Integer existingProductId = productIdsByPrice.putIfAbsent(product.price(), product.id());
+            if (existingProductId != null) {
+                throw new DuplicateProductPriceException(product.price());
+            }
+        }
+    }
+
+    private void ensureActivePriceAvailable(int price, Integer excludedProductId) {
+        boolean priceInUse = productsById.values().stream()
+                .anyMatch(product -> !product.deleted()
+                        && product.price() == price
+                        && !Objects.equals(product.id(), excludedProductId));
+        if (priceInUse) {
+            throw new DuplicateProductPriceException(price);
         }
     }
 }

@@ -165,6 +165,36 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    void requiresDistinctPricesAcrossActiveProducts() throws Exception {
+        mockMvc.perform(post("/api/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Diet Coke","price":150,"quantity":5}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Invalid request"))
+                .andExpect(jsonPath("$.errorCode").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.errors.price")
+                        .value("Price must be distinct across active products"));
+
+        mockMvc.perform(put("/api/products/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Chocolate Bar","price":150,"quantity":6}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.price").exists());
+
+        mockMvc.perform(put("/api/products/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Coke Zero","price":150,"quantity":9}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.price").value(150));
+    }
+
+    @Test
     void rejectsMalformedJsonAndNonNumericParameters() throws Exception {
         mockMvc.perform(post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -1,5 +1,6 @@
 package com.vendingmachine.repository;
 
+import com.vendingmachine.exception.DuplicateProductPriceException;
 import com.vendingmachine.model.PageResult;
 import com.vendingmachine.model.Product;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,20 @@ class InMemoryProductRepositoryTest {
     }
 
     @Test
+    void rejectsDuplicateActiveCatalogPricesWithoutChangingTheExistingCatalog() {
+        Product existing = new Product(1, "Coke", 150, 10, false);
+        repository.replaceAll(List.of(existing));
+
+        assertThatThrownBy(() -> repository.replaceAll(List.of(
+                new Product(2, "Water", 100, 15, false),
+                new Product(3, "Juice", 100, 8, false))))
+                .isInstanceOf(DuplicateProductPriceException.class)
+                .hasMessage("An active product already uses the price 100 cents");
+
+        assertThat(repository.findActivePage(0, 10).content()).containsExactly(existing);
+    }
+
+    @Test
     void returnsOnlyTheRequestedActivePageInStableIdOrder() {
         repository.replaceAll(List.of(
                 new Product(5, "Chocolate Bar", 250, 6, false),
@@ -80,6 +95,24 @@ class InMemoryProductRepositoryTest {
         assertThat(repository.findActivePage(0, 10).totalElements()).isEqualTo(2);
         assertThat(repository.update(6, "Juice", 200, 8)).isEmpty();
         assertThat(repository.softDelete(6)).isEmpty();
+    }
+
+    @Test
+    void enforcesDistinctPricesAcrossActiveProducts() {
+        repository.replaceAll(List.of(
+                new Product(1, "Coke", 150, 10, false),
+                new Product(2, "Water", 100, 15, false)));
+
+        assertThatThrownBy(() -> repository.create("Juice", 150, 8))
+                .isInstanceOf(DuplicateProductPriceException.class);
+        assertThatThrownBy(() -> repository.update(2, "Water", 150, 15))
+                .isInstanceOf(DuplicateProductPriceException.class);
+
+        assertThat(repository.update(1, "Coke Zero", 150, 9)).contains(
+                new Product(1, "Coke Zero", 150, 9, false));
+
+        repository.softDelete(1);
+        assertThat(repository.create("Juice", 150, 8).price()).isEqualTo(150);
     }
 
     @Test

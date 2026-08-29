@@ -27,6 +27,15 @@ public class ApiExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(DuplicateProductPriceException.class)
+    public ProblemDetail handleDuplicateProductPrice(DuplicateProductPriceException exception) {
+        ProblemDetail problem = badRequest(exception.getMessage());
+        problem.setProperty("errorCode", "INVALID_REQUEST");
+        problem.setProperty("errors", Map.of(
+                "price", "Price must be distinct across active products"));
+        return problem;
+    }
+
     @ExceptionHandler(PurchaseDeclinedException.class)
     public ProblemDetail handlePurchaseDeclined(PurchaseDeclinedException exception) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(exception.status(), exception.getMessage());
