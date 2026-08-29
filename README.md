@@ -42,8 +42,10 @@ The product-data flow is:
 
 ## Features
 
-- CRUD operations for the products.
-- Vending operations - coin insertion, product buying, order reset.
+- Responsive React interfaces for vending and product management.
+- In-memory product CRUD with validation, pagination, and soft deletion.
+- Vending operations for coin selection, product purchase, exact change, and transaction reset.
+- A read-only external mock API that supplies the initial catalog.
 
 ## Accepted Currency and Coins
 
@@ -55,54 +57,49 @@ The vending machine uses EUR and accepts:
 - €1.00
 - €2.00
 
-All monetary calculations use integer cents rather than floating-point values. Product prices must be positive multiples of €0.10.
+All monetary calculations use integer cents rather than floating-point values. Product prices must be positive multiples of €0.10 and must be distinct across active products.
 
-## External Mock API
+## Prerequisites
 
-The independently runnable mock API serves the initial product catalog from a static JSON resource. It has no database, mutable state, or write endpoints.
+Install the following before building or starting the application:
 
-Start it with:
+- Java 21
+- Maven
+- Node.js 24 with npm
+
+## Build and Verify
+
+From the repository root, build and test the mock API and backend, then validate the frontend:
+
+```bash
+(cd mock-api && mvn clean verify)
+(cd backend && mvn clean verify)
+(cd frontend && npm ci && npm run lint && npm run build)
+```
+
+The frontend production files are written to `frontend/dist/`.
+
+## Start the Complete Application
+
+The application consists of three processes. Start them in this order, each in a separate terminal opened at the repository root.
+
+Terminal 1 — external mock API:
 
 ```bash
 cd mock-api
 mvn spring-boot:run
 ```
 
-It listens on port `3001`. Retrieve the catalog with:
-
-```bash
-curl http://localhost:3001/products
-```
-
-Each mock product includes its current `quantity`, with the initial values kept within the planned maximum stock of 15. Product prices are expressed in integer EUR cents. The backend's mock API base URL is configured with:
-
-```properties
-vending.external-api.base-url=http://localhost:3001
-```
-
-At startup, the Spring Boot backend calls `GET /products` at this base URL and replaces its in-memory product catalog with the returned products. The mutable application state is held in a map indexed by product ID. It is recreated from the external catalog on every backend restart and is never persisted back to the mock API.
-
-## Running the Backend
-
-Run the test suite and build checks:
-
-```bash
-cd backend
-mvn clean test
-```
-
-Start the backend:
+Terminal 2 — backend:
 
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
-The backend is configured to listen on port `8080`. Start the external mock API first; backend startup fails if the initial catalog cannot be loaded.
+The mock API must be available before the backend starts. Backend startup fails if the initial catalog cannot be loaded.
 
-## Running the Frontend
-
-Use Node.js 24, then install the locked dependencies and start the Vite development server:
+Terminal 3 — frontend development server:
 
 ```bash
 cd frontend
@@ -110,15 +107,33 @@ npm ci
 npm run dev
 ```
 
-Vite serves the frontend at `http://localhost:5173` by default. During development, requests under `/api` are proxied to the Spring Boot backend at `http://localhost:8080`.
+Open `http://localhost:5173`. Vite proxies requests under `/api` to the backend, so no additional local CORS configuration is required.
 
-Create a production build with:
+The development endpoints are:
+
+| Component | URL |
+| --- | --- |
+| Frontend | `http://localhost:5173` |
+| Backend API | `http://localhost:8080/api` |
+| External mock catalog | `http://localhost:3001/products` |
+
+## External Mock API
+
+The independently runnable mock API serves the initial product catalog from a static JSON resource. It has no database, mutable state, or write endpoints.
+
+It listens on port `3001`. Retrieve the catalog with:
 
 ```bash
-cd frontend
-npm ci
-npm run build
+curl http://localhost:3001/products
 ```
+
+Each mock product includes its current `quantity`, with the initial values kept within the enforced maximum stock of 15. Initial product prices are distinct and are expressed in integer EUR cents. The backend's mock API base URL is configured with:
+
+```properties
+vending.external-api.base-url=http://localhost:3001
+```
+
+At startup, the Spring Boot backend calls `GET /products` at this base URL and replaces its in-memory product catalog with the returned products. The mutable application state is held in a map indexed by product ID. It is recreated from the external catalog on every backend restart and is never persisted back to the mock API.
 
 ## Continuous Integration
 
@@ -136,7 +151,7 @@ The backend exposes product operations under `/api/products`:
 | `PUT` | `/api/products/{id}` | Fully replaces an active product's editable fields |
 | `DELETE` | `/api/products/{id}` | Soft-deletes a product and returns its last visible representation |
 
-Create and update requests contain `name`, `price`, and `quantity`. Names must not be blank and may contain at most 100 characters, prices must be positive integer cents divisible by 10, and quantities must be between 0 and 15. IDs are assigned by the backend.
+Create and update requests contain `name`, `price`, and `quantity`. Names must not be blank and may contain at most 100 characters, prices must be positive integer cents divisible by 10 and distinct across active products, and quantities must be between 0 and 15. An update may retain the product's current price, and deleting a product makes its former price available for reuse. IDs are assigned by the backend.
 
 The list endpoint defaults to 20 items per page and accepts page sizes from 1 through 100. Its response contains `content`, `page`, `size`, `totalElements`, and `totalPages`.
 
@@ -181,4 +196,4 @@ vending.coins.initial-inventory[200]=10
 
 Submitted coins are tentatively available when calculating change. The bounded change algorithm respects available quantities, returns exact change with the fewest coins, and prefers larger denominations when equivalent solutions exist. Product stock and the coin till are committed together under a process-local read/write lock. A declined purchase changes neither state and returns problem-details JSON with a stable `errorCode` and the submitted `returnedCoins`.
 
-The frontend keeps only the unsubmitted coin selection in local UI state. Clearing that selection represents transaction reset/refund and requires no backend call because the backend does not accept or mutate coin state before a purchase request succeeds.
+The frontend keeps the pending coin selection in local UI state. Reset clears the selected product and all pending coin counts before purchase. This represents returning the unsubmitted coins and requires no backend call because the backend does not accept or mutate coin state until a purchase request succeeds.
